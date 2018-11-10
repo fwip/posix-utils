@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/fwip/posix-utils/diff"
 	"os"
 	"strconv"
 )
@@ -101,7 +102,7 @@ func main() {
 
 	l1, _ := readLines(settings.file1)
 	l2, _ := readLines(settings.file2)
-	changes := diff(l1, l2)
+	changes := diff.Diff(l1, l2)
 
-	fmt.Println(output(settings, changes))
+	fmt.Println(diff.Format(changes))
 }

@@ -1,4 +1,4 @@
-package main
+package diff
 
 import (
 	"fmt"
@@ -31,7 +31,7 @@ func (c comparison) String() string {
 	return strings.Join(output, "\n")
 }
 
-func diff(old, new []string) []comparison {
+func Diff(old, new []string) []comparison {
 	if len(old) == 0 {
 		if len(old) == len(new) {
 			return []comparison{}
@@ -81,11 +81,11 @@ func diff(old, new []string) []comparison {
 		}
 
 	}
-	comparisons := diff(old[:subStartOld], new[:subStartNew])
+	comparisons := Diff(old[:subStartOld], new[:subStartNew])
 	comparisons = append(comparisons, comparison{
 		kind:   equal,
 		values: new[subStartNew : subStartNew+subLen],
 	})
-	comparisons = append(comparisons, diff(old[subStartOld+subLen:], new[subStartNew+subLen:])...)
+	comparisons = append(comparisons, Diff(old[subStartOld+subLen:], new[subStartNew+subLen:])...)
 	return comparisons
 }

@@ -1,4 +1,4 @@
-package main
+package diff
 
 import (
 	"fmt"
@@ -13,7 +13,28 @@ func fmtRange(start, length int) string {
 	return fmt.Sprintf("%d", start)
 }
 
-func output(s settings, changes []comparison) string {
+func Format(changes []comparison) string {
+	return basicOutput(changes)
+}
+
+//func output(s Settings, changes []comparison) string {
+//	if s.provideContext {
+//		panic("-c NYI")
+//	}
+//	if s.unifiedContext {
+//		panic("-u NYI")
+//	}
+//	if s.edFormat {
+//		panic("-e NYI")
+//	}
+//	if s.fFormat {
+//		panic("-f NYI")
+//	}
+//
+//	return basicOutput(s, changes)
+//}
+
+func basicOutput(changes []comparison) string {
 	out := make([]string, 0)
 	lineOld := 0
 	lineNew := 0
