@@ -1,9 +1,12 @@
-package text
+package txt
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"io"
+	"strconv"
+	"strings"
 )
 
 // PieceTable stores data as a series of pieces
@@ -75,6 +78,9 @@ func (pt PieceTable) String() string {
 	for p := pt.head; p != nil; p = p.next {
 		if p.length == 0 {
 			continue
+		}
+		if p.length < 0 {
+			panic("Length is < 0")
 		}
 		n, err := p.Read(out[idx : idx+p.length])
 		if err != nil {
@@ -174,3 +180,67 @@ func (pt *PieceTable) clean() {
 }
 
 // TODO: PieceTable.Read()
+
+// naiveTable impelements Insert/Delete in a naive way, for ease of testing
+type naiveTable []byte
+
+func (nt *naiveTable) String() string {
+	return string(*nt)
+}
+func (nt *naiveTable) Insert(text []byte, at int) {
+	old := []byte(*nt)
+	new := make([]byte, len(old)+len(text))
+	copy(new[:at], old[:at])
+	copy(new[at:], text)
+	copy(new[at+len(text):], old[at:])
+	*nt = naiveTable(new)
+}
+func (nt *naiveTable) Delete(length int, at int) {
+	*nt = append((*nt)[:at], (*nt)[at+length:]...)
+}
+
+func Fuzz(data []byte) int {
+	s := bufio.NewScanner(bytes.NewReader(data))
+	s.Scan()
+	if s.Err() != nil {
+		return 0
+	}
+	orig := s.Text()
+	pt := NewPieceTable(strings.NewReader(orig), len(orig))
+	nt := naiveTable(orig)
+
+	for s.Scan() {
+		cmd := s.Text()
+		var typ int
+		var at int
+		var txt string
+		n, err := fmt.Sscanf(cmd, "%d %d %s", &typ, &at, &txt)
+		if n != 3 || err != nil || at < 0 || typ == 0 {
+			return 0
+		}
+		// Make sure 'at' isn't too big
+		if at > len(nt) {
+			at = len(nt)
+		}
+		if typ > 0 {
+			// insert
+			nt.Insert([]byte(txt), at)
+			pt.Insert([]byte(txt), at)
+		} else {
+			length, err := strconv.Atoi(txt)
+			if err != nil || length < 0 || at+length >= len(nt) {
+				return 0
+			}
+			nt.Delete(length, at)
+			pt.Delete(length, at)
+		}
+		if nt.String() != pt.String() {
+			panic("problem")
+		}
+	}
+	if s.Err() != nil {
+		return 0
+	}
+
+	return 0
+}
