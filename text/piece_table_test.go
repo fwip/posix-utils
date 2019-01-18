@@ -28,13 +28,16 @@ func TestPieceTableSimpleInsert(t *testing.T) {
 }
 
 func TestPieceTableSimpleDelete(t *testing.T) {
-	orig := bytes.NewReader([]byte("abcdefghi"))
+	orig := bytes.NewReader([]byte("123456789"))
 
 	pt := NewPieceTable(orig, orig.Len())
 
-	pt.Delete(3, 4)
-	expectEqual("abchi", pt.String(), t)
+	pt.Delete(1, 0)
+	expectEqual("23456789", pt.String(), t)
 
-	pt.Delete(2, 2)
-	expectEqual("abi", pt.String(), t)
+	pt.Delete(1, 4)
+	expectEqual("2345789", pt.String(), t)
+
+	pt.Delete(2, 3)
+	expectEqual("23489", pt.String(), t)
 }

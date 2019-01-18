@@ -10,7 +10,7 @@ import (
 type PieceTable struct {
 	orig   io.ReaderAt
 	append *bytes.Buffer
-	pieces []piece // TODO: This should probably be a better data structure
+	head   *piece
 }
 
 // NewPieceTable creates a new PieceTable, ready to use
@@ -19,7 +19,7 @@ func NewPieceTable(r io.ReaderAt, length int) PieceTable {
 	return PieceTable{
 		orig:   r,
 		append: b,
-		pieces: []piece{{length: length, offset: 0, reader: r}},
+		head:   &piece{length: length, offset: 0, reader: r, next: nil},
 	}
 }
 
@@ -28,10 +28,23 @@ type piece struct {
 	length int
 	offset int64
 	reader io.ReaderAt
+	next   *piece
+}
+
+func (p piece) String() string {
+	if p.length == 0 {
+		return ""
+	}
+	b := make([]byte, p.length)
+	p.Read(b)
+	return fmt.Sprintf("%d at %d: %s  -> (%s)", p.length, p.offset, string(b), p.next)
 }
 
 // Read will always read exactly p.length bytes
 func (p piece) Read(bytes []byte) (int, error) {
+	if p.length == 0 {
+		return 0, nil
+	}
 	if len(bytes) < p.length {
 		return 0, fmt.Errorf("%d bytes available, %d needed", len(bytes), p.length)
 	}
@@ -51,14 +64,18 @@ func (p piece) Read(bytes []byte) (int, error) {
 
 // String combines all of the pieces of the PieceTable
 func (pt PieceTable) String() string {
+	//pt.clean()
 	length := 0
-	for _, p := range pt.pieces {
+	for p := pt.head; p != nil; p = p.next {
 		length += p.length
 	}
 
 	out := make([]byte, length, length)
 	idx := 0
-	for _, p := range pt.pieces {
+	for p := pt.head; p != nil; p = p.next {
+		if p.length == 0 {
+			continue
+		}
 		n, err := p.Read(out[idx : idx+p.length])
 		if err != nil {
 			panic(err)
@@ -68,10 +85,21 @@ func (pt PieceTable) String() string {
 	return string(out)
 }
 
+// TODO: not used
+func (p *piece) append(pieces ...*piece) {
+	tmp := p.next
+	for _, p2 := range pieces {
+		p.next = p2
+		p = p2
+	}
+	p.next = tmp
+}
+
 // Insert adds text
 func (pt *PieceTable) Insert(text []byte, at int) {
 	idx := 0
-	for i, p := range pt.pieces {
+	var prev *piece
+	for p := pt.head; p != nil; p = p.next {
 		idx += p.length
 		if idx >= at {
 			leftSize := at - (idx - p.length)
@@ -83,40 +111,66 @@ func (pt *PieceTable) Insert(text []byte, at int) {
 			pt.append.Write(text)
 			newPiece := piece{length: len(text), offset: int64(buflen), reader: bytes.NewReader(pt.append.Bytes())}
 
-			// Add pieces into the array.
-			pt.pieces = append(pt.pieces, piece{}, piece{})
-			copy(pt.pieces[i+2:], pt.pieces[i:])
-			pt.pieces[i] = beforePiece
-			pt.pieces[i+1] = newPiece
-			pt.pieces[i+2] = afterPiece
+			// Add pieces into the list.
+			if prev == nil {
+				pt.head = &beforePiece
+			} else {
+				prev.next = &beforePiece
+			}
+			beforePiece.next = &newPiece
+			newPiece.next = &afterPiece
+			afterPiece.next = p.next
 			return
 		}
+		prev = p
 	}
 	panic(fmt.Errorf("at (%d) too big, max %d", at, idx))
 }
 
 func (pt *PieceTable) Delete(length int, at int) {
 	end := 0
-	for i, p := range pt.pieces {
+	var first *piece
+	for p := pt.head; p != nil; p = p.next {
+		start := end
 		end += p.length
-		if end >= at {
-			start := end - p.length
-			pt.pieces[i].length = at - start - 1
-			if end > at+length {
-				newPiece := piece{length: end - at - length, offset: p.offset + int64(at-start+length), reader: p.reader}
-				// Add new Piece
-				pt.pieces = append(pt.pieces, piece{})
-				copy(pt.pieces[i+1:], pt.pieces[i:])
-				pt.pieces[i+1] = newPiece
+		if end >= at && first == nil {
+			first = p
+			p.length = at - start
+			if end >= at+length {
+				newPiece := &piece{
+					next:   p.next,
+					length: end - (at + length),
+					offset: p.offset + int64(at-start+length),
+					reader: p.reader,
+				}
+				p.next = newPiece
+				return
 			}
-
-			for _, p := range pt.pieces {
-				fmt.Println(p)
-			}
+		}
+		if first != nil && end >= at+length {
+			first.next = p
+			trimLen := at + length - start
+			p.length -= trimLen
+			p.offset += int64(at + length - start)
 			return
 		}
 	}
 	panic(fmt.Errorf("at (%d) too big, max %d", at, end))
+}
+
+func (pt *PieceTable) clean() {
+	// Remove 0-length nodes
+	for pt.head != nil && pt.head.length <= 0 {
+		pt.head = pt.head.next
+	}
+	var prev *piece
+	for p := pt.head; p != nil; p = p.next {
+		if p.length <= 0 {
+			prev.next = p.next
+		}
+		prev = p
+	}
+
 }
 
 // TODO: PieceTable.Read()
