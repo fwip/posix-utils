@@ -1,6 +1,7 @@
 package regexes
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -39,8 +40,14 @@ var parseResults = []struct {
 	{s: "a", elements: []eT{
 		{1, 1, brePlainText(' ')},
 	}},
+	{s: "a*", elements: []eT{
+		{0, math.MaxInt, brePlainText(' ')},
+	}},
 	{s: "[ab]{2,}", elements: []eT{
 		{2, math.MaxInt, &breBracket{}},
+	}},
+	{s: "(ab){2,8}", elements: []eT{
+		{2, 8, &breParen{}},
 	}},
 	{s: "[ab]{2,}.", elements: []eT{
 		{2, math.MaxInt, &breBracket{}},
@@ -54,6 +61,73 @@ var parseResults = []struct {
 		{1, 1, brePlainText(' ')},
 		{1, 1, brePlainText(' ')},
 	}, true, true},
+}
+
+var shouldMatch = []struct {
+	re        string
+	matches   []string
+	nomatches []string
+}{
+	{"",
+		[]string{"", "ab"},
+		[]string{},
+	},
+	{"a",
+		[]string{"a", "ab", "ba"},
+		[]string{"x", ""},
+	},
+	{"ab",
+		[]string{"ab", "cab", "abc", "baba"},
+		[]string{"", "a", "b", "ba"},
+	},
+	{"a.b",
+		[]string{"axb", "aab", "abb"},
+		[]string{"ab", "ax", "axxb"},
+	},
+	{"a{1,2}.b",
+		[]string{"abb", "aab", "aaab", "babb"},
+		[]string{"ab", "ax", "axxb"},
+	},
+	{"a*",
+		[]string{"a", "", "ba", "aabaa"},
+		[]string{},
+	},
+	{"a{2,2}",
+		[]string{"aa", "aaa"},
+		[]string{"", "a", "aba"},
+	},
+	{".{1,2}",
+		[]string{"ab", "abc"},
+		[]string{""},
+	},
+	{"[ab]",
+		[]string{"a", "b", "xby"},
+		[]string{"]"},
+	},
+	{"[xyz]",
+		[]string{"x", "y", "z"},
+		[]string{"abc", ""},
+	},
+	{"(xyz)",
+		[]string{"xyz"},
+		[]string{"x", "y", "z", "xyjz"},
+	},
+	{"^a$",
+		[]string{"a"},
+		[]string{},
+	},
+	{"a$",
+		[]string{"ahowa"},
+		[]string{},
+	},
+	{"^",
+		[]string{"", "ab"},
+		[]string{},
+	},
+	{"$",
+		[]string{"", "ab"},
+		[]string{},
+	},
 }
 
 func xEqualInt(expected, actual int, t *testing.T) {
@@ -114,5 +188,31 @@ func TestParseBre(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestMatchBre(t *testing.T) {
+	for _, test := range shouldMatch {
+		bre, err := ParseBre(test.re)
+		for _, match := range test.matches {
+			t.Run(fmt.Sprintf("/%s/ =~ '%s'", test.re, match), func(t *testing.T) {
+				if err != nil {
+					t.Error(err)
+				}
+				if !bre.Matches(match) {
+					t.Errorf("does not match")
+				}
+			})
+		}
+		for _, nomatch := range test.nomatches {
+			t.Run(fmt.Sprintf("/%s/ !~ '%s'", test.re, nomatch), func(t *testing.T) {
+				if err != nil {
+					t.Error(err)
+				}
+				if bre.Matches(nomatch) {
+					t.Errorf("should not match")
+				}
+			})
+		}
 	}
 }

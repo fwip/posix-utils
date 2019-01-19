@@ -32,10 +32,18 @@ type breDuplElement struct {
 	count   breCount
 }
 
+func (bde *breDuplElement) String() string {
+	return bde.element.Text() + bde.count.String()
+}
+
 type breCount struct {
 	min     int
 	max     int
 	thrifty bool // thrifty is the opposite of greedy
+}
+
+func (bc breCount) String() string {
+	return fmt.Sprintf("{%d,%d}", bc.min, bc.max)
 }
 
 type breElement interface {
@@ -159,6 +167,9 @@ func ParseBre(s string) (*Bre, error) {
 		b.anchorLeft = true
 		runes = runes[1:]
 	}
+	if len(runes) == 0 {
+		return &b, nil
+	}
 	if runes[len(runes)-1] == '$' {
 		b.anchorRight = true
 		runes = runes[:len(runes)-1]
@@ -174,15 +185,17 @@ func ParseBre(s string) (*Bre, error) {
 			if err != nil {
 				panic(err)
 			}
-			element = &breBracket{chars: runes[i+1 : i+n]}
+			element = &breBracket{chars: runes[i+1 : i+n+1]}
 			i += n + 1
-		case '(':
-			n, err := readUntil(runes[i+1:], ')')
-			if err != nil {
-				panic(err)
-			}
-			element = &breParen{chars: runes[i+1 : i+n]}
-			i += n + 1
+		//case '(':
+		//	n, err := readUntil(runes[i+1:], ')')
+		//	if err != nil {
+		//		panic(err)
+		//	}
+		//	element = &breParen{chars: runes[i+1 : i+n]}
+		//	i += n + 1
+		case '(', ')': //TODO: Implement this properly
+			continue
 		case '.':
 			element = breWildcard{}
 		default:
