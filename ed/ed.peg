@@ -1,0 +1,143 @@
+#
+# ~Magic~
+#
+
+package ed
+
+type Parser Peg {
+  Out chan<- command
+  curCmd command
+  curAddr address
+}
+
+# Entrypoint, emit completed command
+first <- e* !. { close(p.Out)}
+
+e <- cmd newLine {
+  p.Out <- p.curCmd
+  p.curCmd = command{}
+}
+
+# All commands go through here
+cmd <- bareCmd
+     / paramCmd
+     / rangeCmd
+     / addrCmd
+     / changeTextCmd
+     / addTextCmd
+     / markCmd
+     / destCmd
+     / readCmd
+     / writeCmd
+     / shellCmd
+     / nullCmd
+
+
+changeTextCmd <- range? changeTextC '\n' text
+addTextCmd <- startAddr? addTextC '\n' text
+
+markCmd <- startAddr? 'k' <[a-z]> {
+  p.curCmd.typ = ctmark
+  p.curCmd.params = []string{buffer[begin:end]}
+}
+
+destCmd <- range? destC <addrO> {p.curCmd.dest = p.curAddr ; p.curAddr = address{}}
+
+readCmd <- startAddr? 'r' sp <param> {
+  p.curCmd.typ = ctread
+  p.curCmd.text = buffer[begin:end]
+}
+
+writeCmd <- range? 'w' sp <param> {
+  p.curCmd.typ = ctwrite
+  p.curCmd.text = buffer[begin:end]
+}
+
+shellCmd <- '!' <param> {
+  p.curCmd.typ = ctshell
+  p.curCmd.text = buffer[begin:end]
+}
+
+nullCmd <- startAddr?
+
+text <- <(!textTerm .)*> textTerm {p.curCmd.text = buffer[begin:end]}
+
+textTerm <- '\n.'
+
+rangeCmd <- range? rangeC
+
+range <- startAddr ',' endAddr
+       / startAddr ','
+       / ',' endAddr
+       / startAddr ';' endAddr
+       / startAddr ';'
+       / ';' endAddr
+       / startAddr
+
+
+addrCmd <- <startAddr> addrC {p.curCmd.start.text = buffer[begin:end]}
+         / addrC
+
+# Addresses
+startAddr <- addrO {p.curCmd.start = p.curAddr; p.curAddr = address{}}
+endAddr <- addrO {p.curCmd.end = p.curAddr; p.curAddr = address{}}
+
+addrO <- <addr offset?>  {p.curAddr.text = buffer[begin:end]}
+
+addr <- literalAddr
+      / markAddr
+      / regexAddr
+      / regexReverseAddr
+      / '.' {p.curAddr.typ = lCurrent}
+      / '$' {p.curAddr.typ = lLast}
+
+# Just a natural number
+literalAddr <- <[0-9]+> {p.curAddr.typ = lNum}
+
+
+markAddr <- '\'' [a-z] { p.curAddr.typ = lMark }
+regexAddr <- '/' basic_regex '/' {p.curAddr.typ = lRegex}
+regexReverseAddr <- '?' back_regex '?' {p.curAddr.typ = lRegexReverse}
+
+basic_regex <- ('\\/' / [^\n/]) +
+back_regex <-  ('\\?' / [^\n?]) +
+
+# Command definitions
+
+# A bare command is boring
+bareCmd <- 'h' {p.curCmd.typ = cthelp}
+         / 'H' {p.curCmd.typ = cthelpMode}
+         / 'P' {p.curCmd.typ = ctprompt}
+         / 'q' {p.curCmd.typ = ctquit}
+         / 'Q' {p.curCmd.typ = ctquitForce}
+         / 'u' {p.curCmd.typ = ctundo}
+
+offset <- ('+'/'-') [0-9]*
+
+paramCmd <- paramC sp <param> { p.curCmd.params = []string{buffer[begin:end]}}
+          / paramC
+
+paramC <- 'e' {p.curCmd.typ = ctedit}
+        / 'E' {p.curCmd.typ = cteditForce}
+        / 'f' {p.curCmd.typ = ctfilename}
+param <- [^\n]+  # Simplify?
+
+addrC <- '=' {p.curCmd.typ = ctlineNumber}
+
+changeTextC <- 'c' {p.curCmd.typ = ctchange}
+
+addTextC <- 'a' {p.curCmd.typ = ctappend}
+          / 'i' {p.curCmd.typ = ctinsert}
+
+rangeC <- 'd' {p.curCmd.typ = ctdelete}
+        / 'j' {p.curCmd.typ = ctjoin}
+        / 'l' {p.curCmd.typ = ctlist}
+        / 'n' {p.curCmd.typ = ctnumber}
+        / 'p' {p.curCmd.typ = ctprint}
+
+destC <- 'm' {p.curCmd.typ = ctmove}
+       / 't' {p.curCmd.typ = ctcopy}
+
+newLine <- '\n'
+
+sp <- ( ' ' / '\t' )+
