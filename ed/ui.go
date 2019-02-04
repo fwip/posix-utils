@@ -1,9 +1,7 @@
 package ed
 
 import (
-	"bufio"
 	"fmt"
-	"io"
 	"strings"
 )
 
@@ -80,7 +78,8 @@ var cmdMap = map[rune]struct {
 	'!': {ctshell, 0, true, false, false},              // TODO
 }
 
-type command struct {
+// Command is magick
+type Command struct {
 	typ    cmdType
 	start  address
 	end    address
@@ -118,46 +117,58 @@ func (ed *Itor) Execute(cmd string) string {
 	return out
 }
 
-func (ed *Itor) processInput(r io.Reader, w io.Writer) {
-	s := bufio.NewScanner(r)
-	for s.Scan() {
-		out := ed.Execute(s.Text())
-		_, err := w.Write([]byte(out))
-		if err != nil {
-			// TODO: robusitfy
-			panic(err)
-		}
-	}
-	if s.Err() != nil {
-		panic(s.Err())
-	}
-}
-
-func parseCommands(r io.Reader, out chan command) error {
-	s := bufio.NewScanner(r)
-	for s.Scan() {
-		cmd := strings.TrimSpace(s.Text())
-		var simpleType cmdType
-		// Simple commands
-		switch cmd {
-		case "e":
-			simpleType = ctedit
-		case "E":
-			simpleType = cteditForce
-		case "f":
-			simpleType = ctfilename
-		case "h":
-			simpleType = cthelp
-		case "H":
-			simpleType = cthelpMode
-		}
-		if simpleType != ctnull {
-			out <- command{typ: simpleType}
-			continue
-		}
-
-		return fmt.Errorf("can't understand command %s", cmd)
-	}
-	close(out)
-	return s.Err()
-}
+//func (ed *Itor) processInput(r io.Reader, w io.Writer) {
+//	s := bufio.NewScanner(r)
+//	for s.Scan() {
+//		out := ed.Execute(s.Text())
+//		_, err := w.Write([]byte(out))
+//		if err != nil {
+//			// TODO: robusitfy
+//			panic(err)
+//		}
+//	}
+//	if s.Err() != nil {
+//		panic(s.Err())
+//	}
+//}
+//
+//func parseCommands(r io.Reader, out chan Command) error {
+//	s := bufio.NewScanner(r)
+//	for s.Scan() {
+//		cmd := s.Text()
+//		p := &Parser{Buffer: cmd, Out: out}
+//		p.Init()
+//		err := p.Parse()
+//		if err != nil {
+//			close(out)
+//			panic("can't parse that baby")
+//		}
+//		p.Execute()
+//
+//		fmt.Println("---")
+//
+//		//cmd := strings.TrimSpace(s.Text())
+//		//var simpleType cmdType
+//		//// Simple commands
+//		//switch cmd {
+//		//case "e":
+//		//	simpleType = ctedit
+//		//case "E":
+//		//	simpleType = cteditForce
+//		//case "f":
+//		//	simpleType = ctfilename
+//		//case "h":
+//		//	simpleType = cthelp
+//		//case "H":
+//		//	simpleType = cthelpMode
+//		//}
+//		//if simpleType != ctnull {
+//		//	out <- command{typ: simpleType}
+//		//	continue
+//		//}
+//
+//		//return fmt.Errorf("can't understand command %s", cmd)
+//	}
+//	close(out)
+//	return s.Err()
+//}

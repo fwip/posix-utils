@@ -7,7 +7,8 @@ import (
 type addressType byte
 
 const (
-	lCurrent addressType = iota
+	lNull addressType = iota
+	lCurrent
 	lLast
 	lNum
 	lOffset //?

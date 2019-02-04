@@ -34,6 +34,14 @@ type piece struct {
 	next   *piece
 }
 
+// Close will close the underlying piecetable. Reading after this operation is an error.
+func (pt *PieceTable) Close() {
+	closer, ok := pt.orig.(io.Closer)
+	if ok {
+		closer.Close()
+	}
+}
+
 func (p piece) String() string {
 	if p.length == 0 {
 		return ""

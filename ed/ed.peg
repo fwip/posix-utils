@@ -5,17 +5,17 @@
 package ed
 
 type Parser Peg {
-  Out chan<- command
-  curCmd command
+  Out chan<- Command
+  curCmd Command
   curAddr address
 }
 
 # Entrypoint, emit completed command
-first <- e* !. { close(p.Out)}
+first <- e* !. { }
 
 e <- cmd newLine {
   p.Out <- p.curCmd
-  p.curCmd = command{}
+  p.curCmd = Command{}
 }
 
 # All commands go through here
@@ -51,6 +51,9 @@ readCmd <- startAddr? 'r' sp <param> {
 writeCmd <- range? 'w' sp <param> {
   p.curCmd.typ = ctwrite
   p.curCmd.text = buffer[begin:end]
+}
+          / range? 'w' {
+  p.curCmd.typ = ctwrite
 }
 
 shellCmd <- '!' <param> {

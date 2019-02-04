@@ -58,17 +58,21 @@ var pTextCmds = []string{
 
 var pMiscCmds = []string{
 	"2kf",
+	"w",
+	"1,4w",
+	"2w newfile",
 }
 
-func parse(cmd string) (cmds []command, err error) {
+func parse(cmd string) (cmds []Command, err error) {
 
-	out := make(chan command)
+	out := make(chan Command)
 	go func() {
+		defer close(out)
 		p := &Parser{Buffer: cmd, Out: out}
 		p.Init()
 		err = p.Parse()
 		if err != nil {
-			close(out)
+			return
 		}
 		p.Execute()
 	}()
