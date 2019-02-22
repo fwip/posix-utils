@@ -6,6 +6,15 @@ type Sorter struct {
 	orderings map[string][]string
 }
 
+func inSlice(haystack []string, needle string) bool {
+	for _, j := range haystack {
+		if needle == j {
+			return true
+		}
+	}
+	return false
+}
+
 func (s *Sorter) Add(items []string) {
 	if s.orderings == nil {
 		s.orderings = make(map[string][]string)
@@ -18,7 +27,9 @@ func (s *Sorter) Add(items []string) {
 		return
 	}
 	for i := 0; i < len(items)-1; i++ {
-		s.orderings[items[i]] = append(s.orderings[items[i]], items[i+1])
+		if !inSlice(s.orderings[items[i]], items[i+1]) {
+			s.orderings[items[i]] = append(s.orderings[items[i]], items[i+1])
+		}
 	}
 }
 

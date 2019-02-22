@@ -8,6 +8,7 @@ import (
 
 var tests = [][]string{
 	[]string{"a b c", "b e"},
+	[]string{"a b c", "b e", "a b c"},
 	[]string{"j", "a b c", "a x", "b x", "a y b", "z"},
 }
 
