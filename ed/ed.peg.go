@@ -434,6 +434,7 @@ func (p *Parser) Execute() {
 
 		case ruleAction8:
 			p.curCmd.text = buffer[begin:end]
+			fmt.Println("t", p.curCmd.text)
 		case ruleAction9:
 			p.curCmd.start.text = buffer[begin:end]
 		case ruleAction10:
@@ -712,7 +713,7 @@ func (p *Parser) Init() {
 			position, tokenIndex = position7, tokenIndex7
 			return false
 		},
-		/* 3 changeTextCmd <- <(range? changeTextC '\n' text)> */
+		/* 3 changeTextCmd <- <(range? changeTextC newLine text)> */
 		func() bool {
 			position21, tokenIndex21 := position, tokenIndex
 			{
@@ -730,10 +731,9 @@ func (p *Parser) Init() {
 				if !_rules[rulechangeTextC]() {
 					goto l21
 				}
-				if buffer[position] != rune('\n') {
+				if !_rules[rulenewLine]() {
 					goto l21
 				}
-				position++
 				if !_rules[ruletext]() {
 					goto l21
 				}
@@ -744,7 +744,7 @@ func (p *Parser) Init() {
 			position, tokenIndex = position21, tokenIndex21
 			return false
 		},
-		/* 4 addTextCmd <- <(startAddr? addTextC '\n' text)> */
+		/* 4 addTextCmd <- <(startAddr? addTextC newLine text)> */
 		func() bool {
 			position25, tokenIndex25 := position, tokenIndex
 			{
@@ -762,10 +762,9 @@ func (p *Parser) Init() {
 				if !_rules[ruleaddTextC]() {
 					goto l25
 				}
-				if buffer[position] != rune('\n') {
+				if !_rules[rulenewLine]() {
 					goto l25
 				}
-				position++
 				if !_rules[ruletext]() {
 					goto l25
 				}
@@ -2171,7 +2170,7 @@ func (p *Parser) Init() {
 			}
 			return true
 		},
-		/* 48 Action8 <- <{p.curCmd.text = buffer[begin:end]}> */
+		/* 48 Action8 <- <{p.curCmd.text = buffer[begin:end]; fmt.Println("t", p.curCmd.text)}> */
 		func() bool {
 			{
 				add(ruleAction8, position)

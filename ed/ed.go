@@ -6,11 +6,15 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/fwip/posix-utils/txt"
 )
+
+// TODO: This is not comprehensive.
+var multlineCmdStart = regexp.MustCompile(`^\s*[0-9.$]*\s*,?\s*[0-9.$]*\s*[aic]\s*$`)
 
 func debug(args ...interface{}) {
 	fmt.Fprintln(os.Stderr, args...)
@@ -46,7 +50,7 @@ func (ed *Itor) Write() error {
 
 	var err error
 
-	tmpName := "." + ed.filename + ".swp"
+	tmpName := ed.filename + ".swp"
 	fmt.Printf("f is '%s', tmp is '%s'\n", ed.filename, tmpName)
 
 	stat, err := os.Stat(ed.filename)
@@ -101,10 +105,16 @@ func (ed *Itor) Print(start, end int) string {
 	return strings.Join(lines[start-1:end], "\n")
 }
 
-func (ed *Itor) insertAtLine(lineNum int, text string) {
-	at := ed.getLineAddr(lineNum)
-	ed.pt.Insert([]byte(text), at)
+// String returns the whole buffer
+func (ed *Itor) String() string {
+	return ed.pt.String()
 }
+
+func (ed *Itor) insertBeforeLine(lineNum int, text string) {
+	at := ed.getLineAddr(lineNum)
+	ed.pt.Insert([]byte(text+"\n"), at)
+}
+
 func (ed *Itor) Delete(start, end int) error {
 	realStart := ed.getLineAddr(start)
 	realEnd := ed.getLineAddr(end + 1)
@@ -144,9 +154,20 @@ func (ed *Itor) ProcessCommands(r io.Reader, w io.Writer) {
 	cmds := make(chan Command)
 
 	go func() {
-		s := bufio.NewScanner(os.Stdin)
+		s := bufio.NewScanner(r)
 		for s.Scan() {
 			cmd := s.Text()
+
+			// Handle multi-line commands
+			if multlineCmdStart.Match([]byte(cmd)) {
+				for s.Scan() {
+					cmd += "\n" + s.Text()
+					if s.Text() == "." {
+						break
+					}
+				}
+			}
+
 			debug("line", cmd)
 			p := &Parser{Buffer: cmd + "\n", Out: chan<- Command(cmds)}
 			p.Init()
@@ -166,6 +187,7 @@ func (ed *Itor) ProcessCommands(r io.Reader, w io.Writer) {
 	}()
 
 	for cmd := range cmds {
+		fmt.Println("cmd", cmd)
 		// Special-case quit command for now
 		if cmd.typ == ctquit {
 			break // TODO: checking
@@ -217,6 +239,12 @@ func (ed *Itor) processCommand(cmd Command) string {
 		if err != nil {
 			return "?" + err.Error()
 		}
+
+	case ctappend:
+		ed.insertBeforeLine(ed.addrLine(cmd.start)+1, cmd.text)
+
+	case ctinsert:
+		ed.insertBeforeLine(ed.addrLine(cmd.start), cmd.text)
 
 	default:
 		return "? (NYI)"

@@ -1,7 +1,6 @@
 package ed
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -61,6 +60,7 @@ var pMiscCmds = []string{
 	"w",
 	"1,4w",
 	"2w newfile",
+	"2a\nhi\n.",
 }
 
 func parse(cmd string) (cmds []Command, err error) {
@@ -77,7 +77,7 @@ func parse(cmd string) (cmds []Command, err error) {
 		p.Execute()
 	}()
 	for c := range out {
-		fmt.Printf("cmd: %#v\n", c)
+		//fmt.Printf("cmd: %#v\n", c)
 		cmds = append(cmds, c)
 	}
 	return

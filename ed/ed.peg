@@ -33,8 +33,8 @@ cmd <- bareCmd
      / nullCmd
 
 
-changeTextCmd <- range? changeTextC '\n' text
-addTextCmd <- startAddr? addTextC '\n' text
+changeTextCmd <- range? changeTextC newLine text
+addTextCmd <- startAddr? addTextC newLine text
 
 markCmd <- startAddr? 'k' <[a-z]> {
   p.curCmd.typ = ctmark
@@ -63,7 +63,7 @@ shellCmd <- '!' <param> {
 
 nullCmd <- startAddr?
 
-text <- <(!textTerm .)*> textTerm {p.curCmd.text = buffer[begin:end]}
+text <- <(!textTerm .)*> textTerm {p.curCmd.text = buffer[begin:end]; fmt.Println("t", p.curCmd.text)}
 
 textTerm <- '\n.'
 
