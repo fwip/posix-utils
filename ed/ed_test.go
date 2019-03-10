@@ -1,8 +1,6 @@
 package ed
 
 import (
-	"io/ioutil"
-	"os"
 	"strings"
 	"testing"
 
@@ -13,28 +11,50 @@ type e2etest struct {
 	cmds       string
 	initialBuf string
 	endBuf     string
+	output     string
 }
 
+var abc = "a\nb\nc"
 var e2etests = []e2etest{
 	{"2a\nhello\n.",
-		"a\nb\nc",
+		abc,
 		"a\nb\nhello\nc",
+		"",
 	},
 	{"2,2d\n",
-		"a\nb\nc",
+		abc,
 		"a\nc",
+		"",
 	},
 	{"0a\nz\n.",
-		"a\nb\nc",
+		abc,
 		"z\na\nb\nc",
+		"",
 	},
 	{"3i\nhello\n.",
-		"a\nb\nc",
+		abc,
 		"a\nb\nhello\nc",
+		"",
 	},
 	{"2,3c\nx\n.",
-		"a\nb\nc",
+		abc,
 		"a\nx",
+		"",
+	},
+	{"a\na\nb\nc\n.",
+		"",
+		abc,
+		"",
+	},
+	{".,.d",
+		abc,
+		"a\nb",
+		"",
+	},
+	{"n",
+		abc,
+		"",
+		"3\tc",
 	},
 }
 
@@ -45,16 +65,21 @@ func TestEndToEnd(t *testing.T) {
 		t.Run("e2e:"+e.cmds, func(t *testing.T) {
 			input := strings.NewReader(e.cmds)
 			buf := strings.NewReader(e.initialBuf)
-			devnull := ioutil.Discard
 
-			ed := NewEditor(input, devnull)
+			output := &strings.Builder{}
+
+			ed := NewEditor(input, output)
 			ed.pt = txt.NewPieceTable(buf, len(e.initialBuf))
 
-			ed.ProcessCommands(input, os.Stderr)
+			ed.ProcessCommands(input, output)
 
 			actual := ed.String()
-			if e.endBuf+"\n" != actual {
-				t.Errorf("expected\n%q\ngot\n%q\n", e.endBuf+"\n", actual)
+			if e.endBuf != "" && e.endBuf+"\n" != actual {
+				t.Errorf("expected buffer\n%q\ngot\n%q\n", e.endBuf+"\n", actual)
+			}
+			if e.output != "" && e.output+"\n\n" != output.String() {
+				t.Errorf("expected output\n%q\ngot\n%q\n", e.output+"\n", output.String())
+
 			}
 		})
 	}

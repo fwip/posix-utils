@@ -113,6 +113,14 @@ func (p *piece) append(pieces ...*piece) {
 func (pt *PieceTable) Insert(text []byte, at int) {
 	idx := 0
 	var prev *piece
+	if pt.head == nil {
+		pt.head = &piece{
+			length: len(text),
+			offset: 0,
+			reader: bytes.NewReader(text),
+		}
+		return
+	}
 	for p := pt.head; p != nil; p = p.next {
 		idx += p.length
 		if idx >= at {

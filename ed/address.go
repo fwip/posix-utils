@@ -18,9 +18,9 @@ const (
 )
 
 type address struct {
-	typ  addressType
-	text string
-	//? offset int
+	typ    addressType
+	text   string
+	offset int
 }
 
 func parseAddresses(cmd string) (start, end address, remainder string) {
@@ -58,4 +58,54 @@ func parseAddress(runes []rune) address {
 	}
 
 	return address{}
+}
+
+var aCur = address{lCurrent, ".", 0}
+var aLast = address{lLast, "$", 0}
+var aCurPlusOne = address{lCurrent, ".", 1}
+var defaultAddresses = [...][2]address{
+	{aCur, aCurPlusOne}, // ctnull
+	{aCur, aCur},        // ctappend
+	{aCur, aCur},        // ctchange
+	{aCur, aCur},        // ctdelete
+	{aCur, aCur},        // ctedit
+	{aCur, aCur},        // cteditForce
+	{aCur, aCur},        // ctfilename
+	{aCur, aLast},       // ctglobal
+	{aCur, aLast},       // ctinteractive
+	{aCur, aCur},        // cthelp
+	{aCur, aCur},        // cthelpMode
+	{aCur, aCur},        // ctinsert
+	{aCur, aCurPlusOne}, // ctjoin
+	{aCur, aCur},        // ctmark
+	{aCur, aCur},        // ctlist
+	{aCur, aCur},        // ctmove
+	{aCur, aCur},        // ctnumber
+	{aCur, aCur},        // ctprint
+	{aCur, aCur},        // ctprompt
+	{aCur, aCur},        // ctquit
+	{aCur, aCur},        // ctquitForce
+	{aLast, aLast},      // ctread
+	{aCur, aCur},        // ctsubstitute
+	{aCur, aCur},        // ctcopy
+	{aCur, aCur},        // ctundo
+	{aCur, aLast},       // ctglobalInverse
+	{aCur, aLast},       // ctinteractiveInverse
+	{aCur, aLast},       // ctwrite
+	{aLast, aLast},      // ctlineNumber
+	{aCur, aCur},        // ctshell
+}
+
+func setDefaultAddresses(cmd Command) Command {
+
+	if cmd.start.typ == lNull {
+		cmd.start = defaultAddresses[cmd.typ][0]
+		if cmd.end.typ == lNull {
+			cmd.end = defaultAddresses[cmd.typ][1]
+		}
+	}
+	if cmd.end.typ == lNull {
+		cmd.end = cmd.start
+	}
+	return cmd
 }

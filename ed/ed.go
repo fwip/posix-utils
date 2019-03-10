@@ -2,6 +2,7 @@ package ed
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -30,7 +31,7 @@ type Itor struct {
 
 // NewEditor creates a new editor that reads and writes to the supplied writer
 func NewEditor(in io.Reader, out io.Writer) (ed *Itor) {
-	ed = &Itor{}
+	ed = &Itor{pt: txt.NewPieceTable(&bytes.Reader{}, 0)}
 	//go ed.processInput(in, out)
 	return ed
 }
@@ -95,6 +96,7 @@ func (ed *Itor) Edit(filename string, force bool) error {
 	debug("setting filename")
 	ed.filename = filename
 	ed.pt = txt.NewPieceTable(f, int(stat.Size()))
+	ed.currentLine = len(ed.getLines())
 
 	return nil
 }
@@ -103,6 +105,15 @@ func (ed *Itor) Edit(filename string, force bool) error {
 func (ed *Itor) Print(start, end int) string {
 	lines := ed.getLines()
 	return strings.Join(lines[start-1:end], "\n")
+}
+
+func (ed *Itor) number(start, end int) string {
+	lines := ed.getLines()
+	out := ""
+	for i := start; i <= end; i++ {
+		out += fmt.Sprintf("%d\t%s\n", i, lines[i-1])
+	}
+	return out
 }
 
 // String returns the whole buffer
@@ -131,18 +142,25 @@ func (ed *Itor) Delete(start, end int) error {
 // 1-indexed
 func (ed *Itor) getLineAddr(num int) int {
 	length := 0
-	for i, line := range ed.getLines() {
-		if i == num-1 {
-			return length
+	lines := ed.getLines()
+	if num > len(lines) {
+		for _, l := range lines {
+			length += len(l) + 1
 		}
-		length += len(line) + 1
+		return length
+	}
+	for i := 0; i < num-1; i++ {
+		length += len(lines[i]) + 1
 	}
 	return length
-	//panic("too much")
 }
 
 func (ed *Itor) getLines() []string {
-	return strings.Split(ed.pt.String(), "\n")
+	lines := strings.Split(ed.pt.String(), "\n")
+	if lines[len(lines)-1] == "" {
+		lines = lines[:len(lines)-1]
+	}
+	return lines
 }
 
 // Quit quits the editor
@@ -157,6 +175,7 @@ func (ed *Itor) Quit(force bool) error {
 // Blocks until all commands have been processed
 func (ed *Itor) ProcessCommands(r io.Reader, w io.Writer) {
 
+	ed.currentLine = len(ed.getLines())
 	cmds := make(chan Command)
 
 	go func() {
@@ -204,21 +223,37 @@ func (ed *Itor) ProcessCommands(r io.Reader, w io.Writer) {
 }
 
 func (ed *Itor) addrLine(a address) int {
+	var line int
 	switch a.typ {
 	case lCurrent:
-		return ed.currentLine
+		line = ed.currentLine
 	case lNum:
 		n, _ := strconv.Atoi(a.text)
-		return n
+		line = n
 	case lLast:
 		n := len(ed.getLines())
-		return n
+		line = n
+	default:
+		panic("Dunno a bout address")
 	}
-	panic("Dunno a bout address")
+
+	return line + a.offset
+}
+
+func linesIn(s string) int {
+	n := 1
+	for _, r := range s {
+		if r == '\n' {
+			n++
+		}
+	}
+	return n
 }
 
 func (ed *Itor) processCommand(cmd Command) string {
 	var err error
+
+	cmd = setDefaultAddresses(cmd)
 	switch cmd.typ {
 	case ctedit:
 		var filename string
@@ -233,8 +268,10 @@ func (ed *Itor) processCommand(cmd Command) string {
 	case ctprint:
 		return ed.Print(ed.addrLine(cmd.start), ed.addrLine(cmd.end))
 
+	case ctnumber:
+		return ed.number(ed.addrLine(cmd.start), ed.addrLine(cmd.end))
+
 	case ctwrite:
-		fmt.Println("writing")
 		err = ed.Write()
 		if err != nil {
 			return "?" + err.Error()
@@ -245,9 +282,12 @@ func (ed *Itor) processCommand(cmd Command) string {
 		if err != nil {
 			return "?" + err.Error()
 		}
+		ed.currentLine = ed.addrLine(cmd.start)
 
 	case ctappend:
-		ed.insertBeforeLine(ed.addrLine(cmd.start)+1, cmd.text)
+		start := ed.addrLine(cmd.start) + 1
+		ed.insertBeforeLine(start, cmd.text)
+		ed.currentLine = start + linesIn(cmd.text)
 
 	case ctinsert:
 		ed.insertBeforeLine(ed.addrLine(cmd.start), cmd.text)
@@ -258,6 +298,10 @@ func (ed *Itor) processCommand(cmd Command) string {
 			return "?" + err.Error()
 		}
 		ed.insertBeforeLine(ed.addrLine(cmd.start), cmd.text)
+		ed.currentLine = ed.addrLine(cmd.start) + linesIn(cmd.text)
+
+	case ctlineNumber:
+		return strconv.Itoa(ed.addrLine(cmd.start))
 
 	default:
 		return "? (NYI)"
