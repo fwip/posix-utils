@@ -61,6 +61,7 @@ func parseAddress(runes []rune) address {
 }
 
 var aCur = address{lCurrent, ".", 0}
+var aFirst = address{lNum, "1", 0}
 var aLast = address{lLast, "$", 0}
 var aCurPlusOne = address{lCurrent, ".", 1}
 var defaultAddresses = [...][2]address{
@@ -103,9 +104,6 @@ func setDefaultAddresses(cmd Command) Command {
 		if cmd.end.typ == lNull {
 			cmd.end = defaultAddresses[cmd.typ][1]
 		}
-	}
-	if cmd.end.typ == lNull {
-		cmd.end = cmd.start
 	}
 	return cmd
 }

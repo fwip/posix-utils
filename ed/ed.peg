@@ -70,12 +70,14 @@ textTerm <- '\n.'
 rangeCmd <- range? rangeC
 
 range <- startAddr ',' endAddr
-       / startAddr ','
-       / ',' endAddr
+       / startAddr ','         {p.curCmd.end = p.curCmd.start}
+       / ',' endAddr           {p.curCmd.start = aFirst}
        / startAddr ';' endAddr
-       / startAddr ';'
-       / ';' endAddr
-       / startAddr
+       / startAddr ';'         {p.curCmd.end = p.curCmd.start}
+       / ';' endAddr           {p.curCmd.start = aCur}
+       / startAddr             {p.curCmd.end = p.curCmd.start}
+       / ','                   {p.curCmd.start = aFirst; p.curCmd.end = aLast}
+       / ';'                   {p.curCmd.start = aCur; p.curCmd.end = aLast}
 
 
 addrCmd <- <startAddr> addrC {p.curCmd.start.text = buffer[begin:end]}

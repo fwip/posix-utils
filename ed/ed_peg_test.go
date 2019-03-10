@@ -61,6 +61,7 @@ var pMiscCmds = []string{
 	"1,4w",
 	"2w newfile",
 	"2a\nhi\n.",
+	",p",
 }
 
 func parse(cmd string) (cmds []Command, err error) {

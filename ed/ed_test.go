@@ -54,7 +54,27 @@ var e2etests = []e2etest{
 	{"n",
 		abc,
 		"",
-		"3\tc",
+		"3\tc\n",
+	},
+	{",p",
+		abc,
+		"",
+		abc,
+	},
+	{";p",
+		abc,
+		"",
+		"c",
+	},
+	{"2;p",
+		abc,
+		"",
+		"b",
+	},
+	{",2p",
+		abc,
+		"",
+		"a\nb",
 	},
 }
 
@@ -77,7 +97,7 @@ func TestEndToEnd(t *testing.T) {
 			if e.endBuf != "" && e.endBuf+"\n" != actual {
 				t.Errorf("expected buffer\n%q\ngot\n%q\n", e.endBuf+"\n", actual)
 			}
-			if e.output != "" && e.output+"\n\n" != output.String() {
+			if e.output != "" && e.output+"\n" != output.String() {
 				t.Errorf("expected output\n%q\ngot\n%q\n", e.output+"\n", output.String())
 
 			}
