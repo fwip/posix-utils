@@ -32,6 +32,10 @@ var e2etests = []e2etest{
 		"a\nb\nc",
 		"a\nb\nhello\nc",
 	},
+	{"2,3c\nx\n.",
+		"a\nb\nc",
+		"a\nx",
+	},
 }
 
 func TestEndToEnd(t *testing.T) {

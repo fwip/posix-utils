@@ -252,6 +252,13 @@ func (ed *Itor) processCommand(cmd Command) string {
 	case ctinsert:
 		ed.insertBeforeLine(ed.addrLine(cmd.start), cmd.text)
 
+	case ctchange:
+		err := ed.Delete(ed.addrLine(cmd.start), ed.addrLine(cmd.end))
+		if err != nil {
+			return "?" + err.Error()
+		}
+		ed.insertBeforeLine(ed.addrLine(cmd.start), cmd.text)
+
 	default:
 		return "? (NYI)"
 	}
