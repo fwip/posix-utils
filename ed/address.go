@@ -65,36 +65,36 @@ var aFirst = address{lNum, "1", 0}
 var aLast = address{lLast, "$", 0}
 var aCurPlusOne = address{lCurrent, ".", 1}
 var defaultAddresses = [...][2]address{
-	{aCur, aCurPlusOne}, // ctnull
-	{aCur, aCur},        // ctappend
-	{aCur, aCur},        // ctchange
-	{aCur, aCur},        // ctdelete
-	{aCur, aCur},        // ctedit
-	{aCur, aCur},        // cteditForce
-	{aCur, aCur},        // ctfilename
-	{aCur, aLast},       // ctglobal
-	{aCur, aLast},       // ctinteractive
-	{aCur, aCur},        // cthelp
-	{aCur, aCur},        // cthelpMode
-	{aCur, aCur},        // ctinsert
-	{aCur, aCurPlusOne}, // ctjoin
-	{aCur, aCur},        // ctmark
-	{aCur, aCur},        // ctlist
-	{aCur, aCur},        // ctmove
-	{aCur, aCur},        // ctnumber
-	{aCur, aCur},        // ctprint
-	{aCur, aCur},        // ctprompt
-	{aCur, aCur},        // ctquit
-	{aCur, aCur},        // ctquitForce
-	{aLast, aLast},      // ctread
-	{aCur, aCur},        // ctsubstitute
-	{aCur, aCur},        // ctcopy
-	{aCur, aCur},        // ctundo
-	{aCur, aLast},       // ctglobalInverse
-	{aCur, aLast},       // ctinteractiveInverse
-	{aCur, aLast},       // ctwrite
-	{aLast, aLast},      // ctlineNumber
-	{aCur, aCur},        // ctshell
+	{aCurPlusOne, aCurPlusOne}, // ctnull
+	{aCur, aCur},               // ctappend
+	{aCur, aCur},               // ctchange
+	{aCur, aCur},               // ctdelete
+	{aCur, aCur},               // ctedit
+	{aCur, aCur},               // cteditForce
+	{aCur, aCur},               // ctfilename
+	{aCur, aLast},              // ctglobal
+	{aCur, aLast},              // ctinteractive
+	{aCur, aCur},               // cthelp
+	{aCur, aCur},               // cthelpMode
+	{aCur, aCur},               // ctinsert
+	{aCur, aCurPlusOne},        // ctjoin
+	{aCur, aCur},               // ctmark
+	{aCur, aCur},               // ctlist
+	{aCur, aCur},               // ctmove
+	{aCur, aCur},               // ctnumber
+	{aCur, aCur},               // ctprint
+	{aCur, aCur},               // ctprompt
+	{aCur, aCur},               // ctquit
+	{aCur, aCur},               // ctquitForce
+	{aLast, aLast},             // ctread
+	{aCur, aCur},               // ctsubstitute
+	{aCur, aCur},               // ctcopy
+	{aCur, aCur},               // ctundo
+	{aCur, aLast},              // ctglobalInverse
+	{aCur, aLast},              // ctinteractiveInverse
+	{aCur, aLast},              // ctwrite
+	{aLast, aLast},             // ctlineNumber
+	{aCur, aCur},               // ctshell
 }
 
 func setDefaultAddresses(cmd Command) Command {

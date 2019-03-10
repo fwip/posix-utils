@@ -13,7 +13,7 @@ type Parser Peg {
 # Entrypoint, emit completed command
 first <- e* !. { }
 
-e <- cmd newLine {
+e <- sp* cmd sp* newLine {
   p.Out <- p.curCmd
   p.curCmd = Command{}
 }
@@ -61,31 +61,32 @@ shellCmd <- '!' <param> {
   p.curCmd.text = buffer[begin:end]
 }
 
+# A null command works as a print
 nullCmd <- startAddr?
 
 text <- <(!textTerm .)*> textTerm {p.curCmd.text = buffer[begin:end]; fmt.Println("t", p.curCmd.text)}
 
 textTerm <- '\n.'
 
-rangeCmd <- range? rangeC
+rangeCmd <- range? sp* rangeC
 
 range <- startAddr ',' endAddr
-       / startAddr ','         {p.curCmd.end = p.curCmd.start}
-       / ',' endAddr           {p.curCmd.start = aFirst}
+       / startAddr ',' sp*     {p.curCmd.end = p.curCmd.start}
+       / ',' endAddr sp*       {p.curCmd.start = aFirst}
        / startAddr ';' endAddr
-       / startAddr ';'         {p.curCmd.end = p.curCmd.start}
-       / ';' endAddr           {p.curCmd.start = aCur}
-       / startAddr             {p.curCmd.end = p.curCmd.start}
-       / ','                   {p.curCmd.start = aFirst; p.curCmd.end = aLast}
-       / ';'                   {p.curCmd.start = aCur; p.curCmd.end = aLast}
+       / startAddr ';' sp*     {p.curCmd.end = p.curCmd.start}
+       / ';' endAddr sp*       {p.curCmd.start = aCur}
+       / startAddr sp*         {p.curCmd.end = p.curCmd.start}
+       / sp* ',' sp*           {p.curCmd.start = aFirst; p.curCmd.end = aLast}
+       / sp* ';' sp*           {p.curCmd.start = aCur; p.curCmd.end = aLast}
 
 
 addrCmd <- <startAddr> addrC {p.curCmd.start.text = buffer[begin:end]}
          / addrC
 
 # Addresses
-startAddr <- addrO {p.curCmd.start = p.curAddr; p.curAddr = address{}}
-endAddr <- addrO {p.curCmd.end = p.curAddr; p.curAddr = address{}}
+startAddr <- sp* addrO sp* {p.curCmd.start = p.curAddr; p.curAddr = address{}}
+endAddr <- sp* addrO sp* {p.curCmd.end = p.curAddr; p.curAddr = address{}}
 
 addrO <- <addr offset?>  {p.curAddr.text = buffer[begin:end]}
 

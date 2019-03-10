@@ -270,6 +270,10 @@ func (ed *Itor) processCommand(cmd Command) string {
 
 	case ctnumber:
 		return ed.number(ed.addrLine(cmd.start), ed.addrLine(cmd.end))
+	case ctnull:
+		lineNum := ed.addrLine(cmd.start)
+		ed.currentLine = lineNum
+		return ed.Print(lineNum, lineNum)
 
 	case ctwrite:
 		err = ed.Write()
