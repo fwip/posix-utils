@@ -169,7 +169,7 @@ func (pt *PieceTable) Delete(length int, at int) {
 			return
 		}
 	}
-	panic(fmt.Errorf("at (%d) too big, max %d", at, end))
+	//panic(fmt.Errorf("at (%d) too big, max %d", at, end))
 }
 
 func (pt *PieceTable) clean() {

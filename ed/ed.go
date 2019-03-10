@@ -107,7 +107,12 @@ func (ed *Itor) Print(start, end int) string {
 
 // String returns the whole buffer
 func (ed *Itor) String() string {
-	return ed.pt.String()
+	s := ed.pt.String()
+	// POSIX requires a file to end with a newline
+	if s[len(s)-1] != '\n' {
+		s += "\n"
+	}
+	return s
 }
 
 func (ed *Itor) insertBeforeLine(lineNum int, text string) {
@@ -132,7 +137,8 @@ func (ed *Itor) getLineAddr(num int) int {
 		}
 		length += len(line) + 1
 	}
-	panic("too much")
+	return length
+	//panic("too much")
 }
 
 func (ed *Itor) getLines() []string {

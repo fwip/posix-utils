@@ -48,9 +48,9 @@ func TestEndToEnd(t *testing.T) {
 
 			ed.ProcessCommands(input, os.Stderr)
 
-			actual := ed.pt.String()
-			if e.endBuf != actual {
-				t.Errorf("expected\n%q\ngot\n%q\n", e.endBuf, actual)
+			actual := ed.String()
+			if e.endBuf+"\n" != actual {
+				t.Errorf("expected\n%q\ngot\n%q\n", e.endBuf+"\n", actual)
 			}
 		})
 	}
