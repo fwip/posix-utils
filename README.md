@@ -81,7 +81,7 @@ For now, consider this code in the public domain. I'll figure out a proper licen
 | strings    | X      |                      |
 | tail       | X      |                      |
 | tee        | X      |                      |
-| test       | X      |                      |
+| test       | ~      | Some operands NYI    |
 | time       | X      |                      |
 | touch      | X      |                      |
 | tr         | X      |                      |
