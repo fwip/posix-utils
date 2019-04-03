@@ -1,20 +1,20 @@
 package main
 
 import (
-	"fmt"
+	"io"
 	"os"
 
 	"github.com/fwip/posix-utils/ed"
 )
 
-func processCommand(cmd string) string {
-
-	return ""
+func process(in io.Reader, out io.Writer) {
+	e := &ed.Itor{}
+	e.ProcessCommands(in, out)
+	if w, ok := out.(io.WriteCloser); ok {
+		w.Close()
+	}
 }
 
 func main() {
-	fmt.Println("its on")
-	e := &ed.Itor{}
-	e.ProcessCommands(os.Stdin, os.Stdout)
-	os.Stdout.Close()
+	process(os.Stdin, os.Stdout)
 }
