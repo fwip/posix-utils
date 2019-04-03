@@ -3,9 +3,10 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/fwip/posix-utils/diff"
 	"os"
 	"strconv"
+
+	"github.com/fwip/posix-utils/pkg/diff"
 )
 
 type settings struct {

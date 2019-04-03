@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/fwip/posix-utils/txt"
+	"github.com/fwip/posix-utils/pkg/txt"
 )
 
 // TODO: This is not comprehensive.

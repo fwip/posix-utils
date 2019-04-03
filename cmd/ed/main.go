@@ -4,7 +4,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/fwip/posix-utils/ed"
+	"github.com/fwip/posix-utils/pkg/ed"
 )
 
 func process(in io.Reader, out io.Writer) {

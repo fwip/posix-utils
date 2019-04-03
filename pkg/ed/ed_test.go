@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fwip/posix-utils/txt"
+	"github.com/fwip/posix-utils/pkg/txt"
 )
 
 type e2etest struct {

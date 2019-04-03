@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/fwip/posix-utils/tsort"
+	"github.com/fwip/posix-utils/pkg/tsort"
 )
 
 func die(msg string, args ...interface{}) {
