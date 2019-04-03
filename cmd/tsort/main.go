@@ -54,12 +54,14 @@ func main() {
 	var input io.Reader = os.Stdin
 	if len(os.Args) > 1 {
 		fname := os.Args[1]
-		f, err := os.Open(fname)
-		if err != nil {
-			die("can't open %s", fname)
+		if fname != "-" {
+			f, err := os.Open(fname)
+			if err != nil {
+				die("can't open %s", fname)
+			}
+			defer f.Close()
+			input = f
 		}
-		defer f.Close()
-		input = f
 	}
 
 	run(input, os.Stdout)
