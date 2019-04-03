@@ -11,7 +11,6 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error: %s\n", err)
 		os.Exit(2)
 	}
-	fmt.Fprintf(os.Stderr, "%t\n", ok)
 	if !ok {
 		os.Exit(1)
 	}
