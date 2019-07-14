@@ -1,0 +1,4 @@
+github.com/bbuck/go-lexer v0.0.0-20150530081543-8752f4c00663 h1:vfwE2ry+LIoUoe6/7WxdCxkNk+bf/NtyPJF5toJESCY=
+github.com/bbuck/go-lexer v0.0.0-20150530081543-8752f4c00663/go.mod h1:0Zcx5s69hSpLEBzpZo1AVBcSnxNYrTG4ijLK29AbTu0=
+github.com/shenwei356/util v0.0.0-20190523143900-f71ff373860c h1:QzUSl2qAx7JrPwSDvL3A4AOfF3mebJMsBIjhQBCkUqo=
+github.com/shenwei356/util v0.0.0-20190523143900-f71ff373860c/go.mod h1:n3qhc3bQzlqJ2/5v79hgl0Gd3WzJOkI8XcUix25Brdg=
