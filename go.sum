@@ -1,4 +1,10 @@
 github.com/bbuck/go-lexer v0.0.0-20150530081543-8752f4c00663 h1:vfwE2ry+LIoUoe6/7WxdCxkNk+bf/NtyPJF5toJESCY=
 github.com/bbuck/go-lexer v0.0.0-20150530081543-8752f4c00663/go.mod h1:0Zcx5s69hSpLEBzpZo1AVBcSnxNYrTG4ijLK29AbTu0=
+github.com/pointlander/compress v1.1.0 h1:5fUcQV2qEHvk0OpILH6eltwluN5VnwiYrkc1wjGUHnU=
+github.com/pointlander/compress v1.1.0/go.mod h1:q5NXNGzqj5uPnVuhGkZfmgHqNUhf15VLi6L9kW0VEc0=
+github.com/pointlander/jetset v1.0.0 h1:bNlaNAX7cDPID9SlcogmXlDWq0KcRJSpKwHXaAM3bGQ=
+github.com/pointlander/jetset v1.0.0/go.mod h1:zY6+WHRPB10uzTajloHtybSicLW1bf6Rz0eSaU9Deng=
+github.com/pointlander/peg v1.0.0 h1:rtCtA6Fu6xJpILX8WJfU+cvrcKmXgTfG/v+bkLP8NYY=
+github.com/pointlander/peg v1.0.0/go.mod h1:WJTMcgeWYr6fZz4CwHnY1oWZCXew8GWCF93FaAxPrh4=
 github.com/shenwei356/util v0.0.0-20190523143900-f71ff373860c h1:QzUSl2qAx7JrPwSDvL3A4AOfF3mebJMsBIjhQBCkUqo=
 github.com/shenwei356/util v0.0.0-20190523143900-f71ff373860c/go.mod h1:n3qhc3bQzlqJ2/5v79hgl0Gd3WzJOkI8XcUix25Brdg=
