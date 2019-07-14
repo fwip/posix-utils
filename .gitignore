@@ -3,3 +3,4 @@ cmd/diff/fuzz
 cmd/diff/diff-fuzz.zip
 diff/fuzz
 diff/diff-fuzz.zip
+*.exe
