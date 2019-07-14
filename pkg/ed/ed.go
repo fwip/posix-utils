@@ -131,6 +131,8 @@ func (ed *Itor) insertBeforeLine(lineNum int, text string) {
 	ed.pt.Insert([]byte(text+"\n"), at)
 }
 
+// Delete will delete from the starting line to the end line
+// This is inclusive, so Delete(3, 3) will delete the fourth line of the buffer
 func (ed *Itor) Delete(start, end int) error {
 	realStart := ed.getLineAddr(start)
 	realEnd := ed.getLineAddr(end + 1)
@@ -155,9 +157,19 @@ func (ed *Itor) getLineAddr(num int) int {
 	return length
 }
 
-func (ed *Itor) getLines() []string {
-	lines := strings.Split(ed.pt.String(), "\n")
-	if lines[len(lines)-1] == "" {
+func (ed *Itor) getLines() (lines []string) {
+	// Retrieve the piece table's output and tokenize into lines
+	s := bufio.NewScanner(strings.NewReader(ed.pt.String()))
+	for s.Scan() {
+		lines = append(lines, s.Text())
+	}
+	if s.Err() != nil {
+		panic(s.Err())
+	}
+
+	// If there's an empty line at the end, remove it
+	// This happens when the file ends in a newline character
+	if len(lines) > 0 && lines[len(lines)-1] == "" {
 		lines = lines[:len(lines)-1]
 	}
 	return lines

@@ -11,7 +11,7 @@ type fileLike interface {
 }
 
 type editor struct {
-	input  chan command
-	output chan string
+	input  io.Reader
+	output io.Writer
 	file   fileLike
 }

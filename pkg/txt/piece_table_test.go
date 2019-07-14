@@ -25,6 +25,9 @@ func TestPieceTableSimpleInsert(t *testing.T) {
 		t.Errorf("Expected %s, got %s", expected, out)
 	}
 
+	pt.Insert([]byte("!"), 0)
+	expectEqual("!abc123defghi", pt.String(), t)
+
 }
 
 func TestPieceTableSimpleDelete(t *testing.T) {
