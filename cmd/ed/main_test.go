@@ -47,7 +47,7 @@ func runEd(infileContents string, commands []string) (out []string, fileContents
 	// Add "edit file" and "quit" commands to the input
 	input := strings.NewReader("e " + f.Name() + "\n" + strings.Join(commands, "\n") + "\nq\n")
 	var builder strings.Builder
-	process(input, &builder)
+	process(input, &builder, nil)
 	out = strings.Split(builder.String(), "\n")
 
 	// Remove first&last empty lines (from opening the file and closing the editor)
