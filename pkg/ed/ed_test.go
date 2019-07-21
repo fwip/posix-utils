@@ -95,6 +95,12 @@ var e2etests = []e2etest{
 		abc,
 		"?????",
 	},
+	{"/b/",
+		abc,
+		abc,
+		"b",
+		"regex works",
+	},
 }
 
 func TestEndToEnd(t *testing.T) {

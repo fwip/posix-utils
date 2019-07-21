@@ -175,6 +175,27 @@ func (ed *Itor) getLines() (lines []string) {
 	return lines
 }
 
+func (ed *Itor) regexMatch(re string) (line int, found bool) {
+	lines := ed.getLines()
+	// TODO: Does this regex implemantion conform to spec?
+	regex, err := regexp.CompilePOSIX(re)
+	if err != nil {
+		debug(err)
+		return -1, false
+	}
+	n := (ed.currentLine % len(lines)) + 1
+	for ; ; n = (n % len(lines)) + 1 {
+		debug("n is", n)
+		if regex.Match([]byte(lines[n-1])) {
+			return n, true
+		}
+		if n == ed.currentLine {
+			return -1, false
+		}
+	}
+	return -1, false
+}
+
 // Quit quits the editor
 func (ed *Itor) Quit(force bool) error {
 	if !force && ed.unsaved() {
@@ -245,6 +266,16 @@ func (ed *Itor) addrLine(a address) int {
 	case lLast:
 		n := len(ed.getLines())
 		line = n
+	case lRegex:
+		regex := strings.Trim(a.text, "/")
+		n, found := ed.regexMatch(regex)
+		line = n
+		if !found {
+			debug("oh no we don't have any way to communicate the invalid address")
+		}
+	//case lRegexReverse:
+	//n := ed.regexMatchReverse(a.text)
+	//line = n
 	default:
 		panic("Dunno a bout address")
 	}
